@@ -18,5 +18,18 @@
     "psr-4": {
       "MASNathan\\LaravelDatabaseSettings\\": "src"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "MASNathan\\LaravelDatabaseSettings\\Tests\\": "tests"
+    }
+  },
+  "require-dev": {
+    "laracasts/testdummy": "^2.3",
+    "phpunit/phpunit": "^5.6",
+    "laravel/laravel": "^5.3"
+  },
+  "config": {
+    "bin-dir": "bin"
   }
 }
