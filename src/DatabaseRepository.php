@@ -3,6 +3,7 @@
 namespace MASNathan\LaravelDatabaseSettings;
 
 use Illuminate\Config\Repository;
+use Illuminate\Support\Arr;
 use MASNathan\LaravelDatabaseSettings\Models\Setting;
 
 class DatabaseRepository extends Repository
@@ -29,13 +30,24 @@ class DatabaseRepository extends Repository
      */
     public function get($key, $default = null)
     {
-        $setting = Setting::find($key);
+        $settings = Setting::where('key', 'LIKE', $key . '%')->get()->keyBy('key');
 
-        if (is_null($setting)) {
+        if ($settings->count() == 0) {
             return $default;
         }
 
-        return unserialize($setting->value);
+        if ($settings->count() == 1 && $settings->first()->key == $key) {
+            $value = unserialize($settings->first()->value);
+
+            return is_null($value) ? $default : $value;
+        }
+
+        $array = [];
+        foreach ($settings as $setting) {
+            Arr::set($array, $setting->key, unserialize($setting->value));
+        }
+
+        return $array ? $array : $default;
     }
 
     /**
@@ -50,9 +62,17 @@ class DatabaseRepository extends Repository
         $keys = is_array($key) ? $key : [$key => $value];
 
         foreach ($keys as $key => $value) {
-            $setting = Setting::firstOrNew(['key' => $key]);
-            $setting->value = serialize($value);
-            $setting->save();
+            if (is_array($value) && Arr::isAssoc($value)) {
+                foreach (Arr::dot($value, $key . '.') as $k => $v) {
+                    $setting = Setting::firstOrNew(['key' => $k]);
+                    $setting->value = serialize($v);
+                    $setting->save();
+                }
+            } else {
+                $setting = Setting::firstOrNew(['key' => $key]);
+                $setting->value = serialize($value);
+                $setting->save();
+            }
         }
     }
 
@@ -69,18 +89,11 @@ class DatabaseRepository extends Repository
             return [];
         }
 
-        $keyValueArray = [];
+        $array = [];
         foreach ($settings as $setting) {
-            $keyParts = explode('.', $setting->key);
-
-            $array = unserialize($setting->value);
-            foreach (array_reverse($keyParts) as $index => $key) {
-                $array = [$key => $array];
-            }
-
-            $keyValueArray = array_merge_recursive($keyValueArray, $array);
+            Arr::set($array, $setting->key, unserialize($setting->value));
         }
 
-        return $keyValueArray;
+        return $array;
     }
 }
