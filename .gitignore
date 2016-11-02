@@ -4,3 +4,5 @@ composer.lock
 vendor/
 bin/
 build/
+tests/cache
+!tests/cache/.gitkeep

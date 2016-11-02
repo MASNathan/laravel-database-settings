@@ -47,7 +47,7 @@ class DatabaseRepository extends Repository
             Arr::set($array, $setting->key, unserialize($setting->value));
         }
 
-        return $array ? $array : $default;
+        return Arr::get($array, $key, $default);
     }
 
     /**

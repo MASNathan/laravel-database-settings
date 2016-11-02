@@ -22,8 +22,15 @@ abstract class DatabaseTestCase extends TestCase
         // preload the settings.php config file
         $app['config']->set('settings', include __DIR__ .'/../config/settings.php');
 
+        $app['config']->set('cache.stores.file.path', __DIR__ . '/cache');
+
+        $app['cache']->flush();
+
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite.database', ':memory:');
+
+        // This should only do work for Sqlite DBs in memory.
+        $this->migrate();
 
         $app->register(LaravelDatabaseSettingsServiceProvider::class);
 
@@ -49,16 +56,12 @@ abstract class DatabaseTestCase extends TestCase
         }
     }
 
-
     /**
      * Setup the DB before each test.
      */
     public function setUp()
     {
         parent::setUp();
-
-        // This should only do work for Sqlite DBs in memory.
-        $this->migrate();
 
         // We'll run all tests through a transaction,
         // and then rollback afterward.
@@ -71,6 +74,8 @@ abstract class DatabaseTestCase extends TestCase
     public function tearDown()
     {
         DB::rollback();
+
+        $this->app['cache']->flush();
 
         parent::tearDown();
     }
