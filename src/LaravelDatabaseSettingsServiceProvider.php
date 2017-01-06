@@ -2,6 +2,8 @@
 
 namespace MASNathan\LaravelDatabaseSettings;
 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelDatabaseSettingsServiceProvider extends ServiceProvider
@@ -19,9 +21,11 @@ class LaravelDatabaseSettingsServiceProvider extends ServiceProvider
 
         $this->publishes($this->getMigrationToPublish(), 'migrations');
 
-        $this->app->instance('config.local', $this->app['config']);
-        $this->app->instance('config.database', new DatabaseRepository());
-        $this->app->instance('config', new RepositoryManager());
+        if (config('settings') && DB::connection()->getDatabaseName() && Schema::hasTable(config('settings.database.table'))) {
+            $this->app->instance('config.local', $this->app['config']);
+            $this->app->instance('config.database', new DatabaseRepository());
+            $this->app->instance('config', new RepositoryManager());
+        }
     }
 
     /**
