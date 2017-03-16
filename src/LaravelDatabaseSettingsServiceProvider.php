@@ -21,7 +21,7 @@ class LaravelDatabaseSettingsServiceProvider extends ServiceProvider
 
         $this->publishes($this->getMigrationToPublish(), 'migrations');
 
-        if (config('settings') && DB::connection()->getDatabaseName() && Schema::hasTable(config('settings.database.table'))) {
+        if (config('settings') && config('database.default') && DB::connection()->getDatabaseName() && Schema::hasTable(config('settings.database.table'))) {
             $this->app->instance('config.local', $this->app['config']);
             $this->app->instance('config.database', new DatabaseRepository());
             $this->app->instance('config', new RepositoryManager());
